@@ -5,20 +5,15 @@ const { calculateToken } = require("../helper/users");
 authRouter.post("/checkCredentials", (req, res) => {
   const { email, password } = req.body;
   User.findByEmail(email).then((user) => {
-    if (!user) {
-      res.cookie("user_token", "");
-      return res.status(401).json({ error: "Invalid Email" });
-    } else {
+    if (!user) res.status(401).send("Unknown User");
+    else {
+      console.log(user);
       User.verifyPassword(password, user.password).then((passwordIsCorrect) => {
         if (passwordIsCorrect) {
-          const token = calculateToken(email);
-          User.update(user.id, { token: token });
+          const token = calculateToken(email, user.id);
           res.cookie("user_token", token);
           res.send();
-        } else {
-          res.cookie("user_token", "");
-          return res.status(401).json({ error: "Invalid Password" });
-        }
+        } else res.status(401).send("Invalid credentials");
       });
     }
   });

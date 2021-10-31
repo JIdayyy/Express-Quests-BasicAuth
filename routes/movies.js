@@ -3,13 +3,15 @@ const Movie = require("../models/movie");
 const checkToken = require("../checkToken");
 const User = require("../models/user");
 const cookie = require("cookie");
+const jwt = require("jsonwebtoken");
+const { PRIVATE_KEY } = require("../helper/users");
 
-moviesRouter.get("/", checkToken, async (req, res) => {
+moviesRouter.get("/", async (req, res) => {
   const { max_duration, color } = req.query;
 
   const { user_token } = cookie.parse(req.headers.cookie);
-  const { id: user_id } = await User.findByToken(user_token);
-
+  const { user_id } = jwt.verify(user_token, PRIVATE_KEY);
+  console.log(user_id);
   Movie.findMany({ filters: { max_duration, color, user_id } })
     .then((movies) => {
       res.json(movies);
@@ -45,12 +47,9 @@ moviesRouter.get("/:id", (req, res) => {
     });
 });
 
-moviesRouter.post("/", checkToken, async (req, res) => {
-  // I added this in order to get the user and return the user_id
-  // But the token is validate by the checkToken middleware
-
+moviesRouter.post("/", async (req, res) => {
   const { user_token } = cookie.parse(req.headers.cookie);
-  const { id: user_id } = await User.findByToken(user_token);
+  const { user_id } = jwt.verify(user_token, PRIVATE_KEY);
   console.log(user_id);
   const error = Movie.validate(req.body);
   if (error) {

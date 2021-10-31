@@ -13,6 +13,7 @@ const hashPassword = (plainPassword) => {
 };
 
 const verifyPassword = (plainPassword, hashedPassword) => {
+  console.log("ok");
   return argon2.verify(hashedPassword, plainPassword, hashingOptions);
 };
 const validate = (data, forCreation = true) => {
